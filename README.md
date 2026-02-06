@@ -25,13 +25,16 @@ PrivacyPilot is a comprehensive privacy compliance system that helps websites ma
 ### Installation
 ```bash
 # Clone the repository
-git clone <your-repo-url>
-cd CyberFest
+git clone https://github.com/Monica-1107/Cyberfest.git
+cd Cyberfest
 
 # Install dependencies
 npm install
 
-# Start the development server
+# Start the GenKit development server (for AI features)
+npm run genkit:dev
+
+# Start the main development server (in another terminal)
 npm run dev
 ```
 
