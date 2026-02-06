@@ -1,0 +1,17 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-privacy",
+      "description": "Abstract security and data privacy concept",
+      "imageUrl": "https://picsum.photos/seed/privacy1/1200/600",
+      "imageHint": "data security"
+    },
+    {
+      "id": "dashboard-preview",
+      "description": "Modern analytics dashboard interface",
+      "imageUrl": "https://picsum.photos/seed/dash1/800/600",
+      "imageHint": "dashboard analytics"
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * SECURITY RULES DOCUMENTATION
+     * 
+     * Core Philosophy: 
+     * This ruleset implements a User-Ownership security model for sensitive data, 
+     * while allowing authenticated management of global reference catalogs (Websites/Cookies).
+     * 
+     * Data Structure:
+     * - /users/{userId}: The root user profile.
+     * - /users/{userId}/consentRecords/{id}: Historical and active consent choices.
+     * - /users/{userId}/privacyLogs/{id}: Transparency logs.
+     * - /websites/{id}: Global directory of integrated sites (Public Read, Auth Write).
+     * - /cookies/{id}: Global directory of cookie definitions (Public Read, Auth Write).
+     */
+
+    // --- Helper Functions ---
+
+    /** Checks if the user is authenticated. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** Checks if the current user matches the provided UID. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** Combines ownership with a check for document existence for destructive operations. */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /** Validates that the userId in the data matches the userId in the path. */
+    function isConsistent(userId) {
+      return request.resource.data.userId == userId;
+    }
+
+    /** Enforces that a specific field cannot be changed during an update. */
+    function isImmutable(fieldName) {
+      return !(fieldName in request.resource.data) || request.resource.data[fieldName] == resource.data[fieldName];
+    }
+
+    // --- Collection Rules ---
+
+    /**
+     * @description Rules for the User profile. Users can manage their own profile.
+     */
+    match /users/{userId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update, delete: if isExistingOwner(userId);
+
+      /**
+       * @description Records of user consent for cookie categories.
+       */
+      match /consentRecords/{consentRecordId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isConsistent(userId);
+        allow update: if isExistingOwner(userId) && isImmutable('userId');
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Transparency logs for consent changes.
+       */
+      match /privacyLogs/{privacyLogEntryId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isConsistent(userId);
+        allow update, delete: if isExistingOwner(userId);
+      }
+    }
+
+    /**
+     * @description Global directory of websites. Readable by everyone, manageable by authenticated users.
+     * @path /websites/{websiteId}
+     * @allow get, list (public)
+     * @allow create, update, delete (authenticated)
+     */
+    match /websites/{websiteId} {
+      allow get, list: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    /**
+     * @description Global directory of cookie definitions. Readable by everyone, manageable by authenticated users.
+     * @path /cookies/{cookieId}
+     * @allow get, list (public)
+     * @allow create, update, delete (authenticated)
+     */
+    match /cookies/{cookieId} {
+      allow get, list: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+  }
+}
