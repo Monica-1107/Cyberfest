@@ -6,7 +6,6 @@ import { Sparkles, Send, Loader2, BrainCircuit, Check, Info, Target, Zap, Lightb
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { optimizeConsentRequests } from '@/ai/flows/optimize-consent-requests';
 import ReactMarkdown from 'react-markdown';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -39,10 +38,24 @@ export function AIOptimizer() {
     setIsLoading(true);
     try {
       console.log('Sending to AI:', { consentData: data, websiteType });
-      const output = await optimizeConsentRequests({
-        consentData: data,
-        websiteType
+      
+      // Call server API instead of direct AI function
+      const response = await fetch('/api/ai/optimize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          consentData: data,
+          websiteType
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const output = await response.json();
       console.log('AI Response:', output);
       setResult(output);
     } catch (e) {
