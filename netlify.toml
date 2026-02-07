@@ -1,0 +1,30 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[functions]
+  directory = "netlify/functions"
+
+# Handle Next.js API routes
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Environment variables (set these in Netlify dashboard for security)
+[build.environment]
+  # These will be set in Netlify dashboard
+  # FIREBASE_PROJECT_ID=""
+  # FIREBASE_APP_ID=""
+  # FIREBASE_API_KEY=""
+  # FIREBASE_AUTH_DOMAIN=""
+  # GOOGLE_GENAI_API_KEY=""
